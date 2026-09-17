@@ -1,0 +1,43 @@
+# Azure Repos PR checks are enforced by build-validation policies.
+trigger:
+  branches:
+    include: [main, develop]
+pr:
+  branches:
+    include: [main, develop]
+resources:
+  repositories:
+    - repository: deliveryTemplates
+      type: git
+      name: terraform-delivery-templates
+      ref: 472c0c5bebe7f07aca8c51c7fabf0a47280a0b25
+jobs:
+  - template: azure-pipelines/jobs/terraform-validate.yml@deliveryTemplates
+    parameters:
+      jobName: TerraformRoot
+      directory: .
+      testDirectory: tests
+  - template: azure-pipelines/jobs/terraform-validate.yml@deliveryTemplates
+    parameters:
+      jobName: Example_uks_pprd
+      directory: .
+      testDirectory: tests/targets
+      varFiles: |
+        config/global.tfvars
+        config/uks/pprd/pprd.tfvars
+  - template: azure-pipelines/jobs/terraform-validate.yml@deliveryTemplates
+    parameters:
+      jobName: Example_1
+      directory: .
+      testDirectory: tests/targets
+      varFiles: |
+        config/global.tfvars
+        examples/basic/basic.tfvars
+  - template: azure-pipelines/jobs/terraform-validate.yml@deliveryTemplates
+    parameters:
+      jobName: Example_2
+      directory: .
+      testDirectory: tests/targets
+      varFiles: |
+        config/global.tfvars
+        examples/complete/complete.tfvars

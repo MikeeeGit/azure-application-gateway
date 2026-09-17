@@ -1,0 +1,5 @@
+Azure Application Gateway
+Copyright 2026 Mike Flynn
+Derived from the author's archived AZ-TF-appgateway-fd and AZ-TF-MOD-waf-policy configurations.
+Public examples, implementation and documentation use synthetic configuration.
+Licensed under the Apache License, Version 2.0.
