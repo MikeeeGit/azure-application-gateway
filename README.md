@@ -76,3 +76,5 @@ Mocks prove configuration contracts, not live Azure deployment, DNS reachability
 - [Cutover and rollback](docs/cutover.md)
 - [Source provenance and migration](docs/migration.md)
 - [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) · [Changelog](CHANGELOG.md)
+
+Optional [ingress TLS profile](examples/ingress-tls/README.md) preserves workload identity, CSI certificate synchronization and gateway-to-controller HTTPS as an explicit path beside the simple direct-ILB demo.

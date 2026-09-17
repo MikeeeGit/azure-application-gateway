@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Added an explicit controller-independent ingress TLS profile and focused offline integration checks.
+
 - Bind the basic example certificate provider explicitly to its workload vault subscription so shared-global layering stays valid.
 
 - Reconcile September source: expose default-on WAF request-body size enforcement and demonstrate explicit environment-specific JSON policies, with mocked regression coverage.
