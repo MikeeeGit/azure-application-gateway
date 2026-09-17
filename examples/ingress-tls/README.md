@@ -2,9 +2,17 @@
 
 This explicit profile keeps Application Gateway WAF/TLS at the edge and re-encrypts traffic to the cluster gateway or ingress controller on port443. That controller terminates the backend TLS session and routes HTTP to the application. It works with the maintained Gateway API profile or a separately selected historical ingress compatibility profile; Terraform does not install either controller.
 
+For a **new deployment with no existing HTTP path**, use the separate [HTTPS-first example](../https-first/README.md). The following sequence preserves an already serving direct/legacy HTTP deployment.
+
 Start with [candidate.tfvars](candidate.tfvars) after `config/global.tfvars` and `config/uks/pprd/pprd.tfvars`. It points only the preview pool to the independently reserved Envoy candidate address `10.81.4.21` over HTTPS443. Live traffic still uses the stable DNS alias at `10.81.0.20` over HTTP80. The maintained controller uses `10.81.0.21`/`10.81.4.21`, leaving old direct/compatibility endpoints independent during migration. Do not skip this phase when moving an active HTTP demo.
 
 After proving candidate readiness, [backend.tfvars](backend.tfvars) is an **explicit traffic cutover**: it changes the stable alias to `10.81.4.21` and all three backend settings (`web`, `api`, `preview`) to HTTPS443. Listeners, WAF rules, stable alias name and Host/SNI contract remain stable. The preview frontend hostname is independent; it forwards `web.example.test` to the candidate backend. App/Helm delivery does not select either Terraform phase automatically.
+
+## Use these profiles with saved-plan delivery
+
+The local `tf_setup`/`tf_plan` helpers and authenticated component pipelines read **only** `config/global.tfvars`, followed by `config/<region>/<environment>/<environment>.tfvars`. They do not discover example files or accept `TF_CLI_ARGS`/`TF_VAR_*` overrides. The three-file commands below are credential-free validation compositions.
+
+For actual private delivery, merge the selected profile's complete `backend_settings`, `backend_dns_records` and `backend_pools` maps into the private PPRD target before the normal helper/pipeline cycle. Preserve unrelated entries, replace existing assignments rather than duplicating them, and replace synthetic hosts/addresses. Terraform replaces whole maps rather than recursively merging tfvars. Review the saved plan's exact active/preview destinations, Host/SNI and protocol/port changes. Keep the prior reviewed maps for rollback; changing profile after approval requires a new plan.
 
 ```bash
 terraform test -test-directory=tests/ingress-candidate \

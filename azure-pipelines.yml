@@ -14,6 +14,15 @@ resources:
 jobs:
   - template: azure-pipelines/jobs/terraform-validate.yml@deliveryTemplates
     parameters:
+      jobName: FreshHttpsInstallation
+      directory: .
+      testDirectory: tests/https-first
+      varFiles: |
+        config/global.tfvars
+        config/uks/pprd/pprd.tfvars
+        examples/https-first/https.tfvars
+  - template: azure-pipelines/jobs/terraform-validate.yml@deliveryTemplates
+    parameters:
       jobName: TerraformRoot
       directory: .
       testDirectory: tests

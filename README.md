@@ -24,7 +24,7 @@ This stack owns the gateway, resource group, optional public IP and identity, WA
 ## Start here
 
 1. Follow the [shared Azure setup guide](https://github.com/MikeeeGit/terraform-delivery-templates/blob/v0.2.0/docs/getting-started.md) for state storage and delivery identities.
-2. Prepare the network, certificates and ingress services in [deployment order](docs/deployment.md).
+2. Prepare the network, certificates and ingress services in [deployment order](docs/deployment.md). Use [HTTPS-first](examples/https-first/README.md) for a new Envoy deployment, or retain the existing direct/migration examples for their documented purpose. The [sandbox runbook](https://github.com/MikeeeGit/terraform-delivery-templates/blob/main/docs/azure/sandbox-deployment.md) connects all prerequisites.
 3. Make a private deployment copy. Replace synthetic IDs in delivery.azure.json and config/global.tfvars; provide real existing network IDs, versionless certificate secret URIs and verified ingress IPs.
 4. Review [configuration](docs/configuration.md), [complete integration](examples/complete/README.md) and [migration](docs/migration.md).
 5. Use the shared helpers from the repository root:

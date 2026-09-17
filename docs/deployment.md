@@ -24,7 +24,7 @@ For pre-established access, supply existing_identity and existing mode, with the
 
 ## Prepare backends
 
-Deploy AKS clusters and the required backend Services independently. Reserve and deploy internal LoadBalancer service IPs. The sample creates those Services through Kustomize; a general multi-application ingress platform may use a separately operated controller. The example 10.81.0.20/10.81.4.20 values are supplied placeholders, not resources created by the AKS root or this stack.
+Deploy AKS clusters and platform/application services independently. The maintained Envoy profile allocates private HTTPS frontends `10.81.0.21`/`10.81.4.21`; the app uses ClusterIP plus HTTPRoute. For an empty installation use the [HTTPS-first profile](../examples/https-first/README.md). The retained direct-Service example instead uses `10.81.0.20`/`10.81.4.20` over HTTP. The migration profile deliberately preserves a serving direct endpoint until cutover. Neither these addresses nor their Services are created by the AKS root or this gateway stack; verify actual allocation and responses first.
 
 Deploy ingress routes for configured Hosts and health paths, verify them from an equivalent network location, and allow gateway-to-backend ports through NSGs/firewalls. Do not use AGIC to reconcile this Terraform-owned gateway.
 
@@ -32,7 +32,7 @@ Deploy ingress routes for configured Hosts and health paths, verify them from an
 
 Replace synthetic values everywhere. Keep the apps.internal.example child zone owned by this stack, with internal.example parent owned by network foundation. Hub-proxy designs need hub and spoke links; the complete example supplies both. Avoid duplicate Key Vault zone links across states.
 
-Run tf_setup, tf_init, tf_plan, review, and tf_apply through the shared helpers. Owned DNS records/links are explicit gateway dependencies, but a mock plan does not prove live resolution.
+Merge the chosen gateway profile into private `config/uks/pprd/pprd.tfvars`, preserving unrelated values and replacing its complete backend maps. The helpers read only global and selected target tfvars; example files are not included automatically. Run tf_setup, tf_init, tf_plan, review, and tf_apply through the shared helpers. Owned DNS records/links are explicit gateway dependencies, but a mock plan does not prove live resolution.
 
 Before publishing DNS, check backend health, each Host, certificate chain, redirect, public/private listener, path fallback, rewrite and WAF policy. Review logs and tune only service-specific false positives. Public/private client DNS publication remains separately owned.
 
@@ -41,6 +41,6 @@ Use [cutover and rollback](cutover.md) for switching clusters; keep the old clus
 
 ## Integrated sample without an ingress controller
 
-The [platform demo](https://github.com/MikeeeGit/aks-platform-demo) creates one internal Kubernetes LoadBalancer Service per cluster at the example backend addresses. For this single application the gateway can use those private endpoints directly; no ingress controller is required. Shared Kustomize delivery preserves the same container digest across aks01 and aks02. Check Service address assignment, private health endpoints and expected release/slot metadata before configuring or changing the gateway target.
+The retained **direct-Service profile** in the [platform demo](https://github.com/MikeeeGit/aks-platform-demo) creates one internal Kubernetes LoadBalancer Service per cluster at the `.20` example backend addresses. For this single application the gateway can use those private endpoints directly; no ingress controller is required. Shared Kustomize delivery preserves the same container digest across aks01 and aks02. Check Service address assignment, private health endpoints and expected release/slot metadata before configuring or changing the gateway target.
 
 The optional [shared firewall](https://github.com/MikeeeGit/azure-firewall) owns AKS egress policy; the separate routing add-on never attaches AKS forced-tunnel tables to the gateway subnet.

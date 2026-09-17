@@ -10,6 +10,17 @@ concurrency:
   group: terraform-ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 jobs:
+  https-first:
+    name: Fresh HTTPS installation
+    uses: MikeeeGit/terraform-delivery-templates/.github/workflows/terraform-validate.yml@472c0c5bebe7f07aca8c51c7fabf0a47280a0b25
+    with:
+      template-ref: 472c0c5bebe7f07aca8c51c7fabf0a47280a0b25
+      directory: .
+      test-directory: tests/https-first
+      var-files: |
+        config/global.tfvars
+        config/uks/pprd/pprd.tfvars
+        examples/https-first/https.tfvars
   terraform:
     name: Terraform root
     uses: MikeeeGit/terraform-delivery-templates/.github/workflows/terraform-validate.yml@472c0c5bebe7f07aca8c51c7fabf0a47280a0b25

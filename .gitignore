@@ -36,3 +36,4 @@ __pycache__/
 !config/uks/pprd/pprd.tfvars
 !examples/basic/basic.tfvars
 !examples/complete/complete.tfvars
+!examples/https-first/https.tfvars
