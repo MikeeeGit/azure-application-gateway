@@ -24,7 +24,7 @@ For pre-established access, supply existing_identity and existing mode, with the
 
 ## Prepare backends
 
-Deploy AKS clusters and your chosen ingress controllers independently. Reserve and deploy internal LoadBalancer service IPs. The example 10.81.0.20/10.81.4.20 values are supplied placeholders, not resources created by the AKS root or this stack.
+Deploy AKS clusters and the required backend Services independently. Reserve and deploy internal LoadBalancer service IPs. The sample creates those Services through Kustomize; a general multi-application ingress platform may use a separately operated controller. The example 10.81.0.20/10.81.4.20 values are supplied placeholders, not resources created by the AKS root or this stack.
 
 Deploy ingress routes for configured Hosts and health paths, verify them from an equivalent network location, and allow gateway-to-backend ports through NSGs/firewalls. Do not use AGIC to reconcile this Terraform-owned gateway.
 
@@ -37,3 +37,10 @@ Run tf_setup, tf_init, tf_plan, review, and tf_apply through the shared helpers.
 Before publishing DNS, check backend health, each Host, certificate chain, redirect, public/private listener, path fallback, rewrite and WAF policy. Review logs and tune only service-specific false positives. Public/private client DNS publication remains separately owned.
 
 Use [cutover and rollback](cutover.md) for switching clusters; keep the old cluster available until replacement traffic is proven and drained.
+
+
+## Integrated sample without an ingress controller
+
+The [platform demo](https://github.com/MikeeeGit/aks-platform-demo) creates one internal Kubernetes LoadBalancer Service per cluster at the example backend addresses. For this single application the gateway can use those private endpoints directly; no ingress controller is required. Shared Kustomize delivery preserves the same container digest across aks01 and aks02. Check Service address assignment, private health endpoints and expected release/slot metadata before configuring or changing the gateway target.
+
+The optional [shared firewall](https://github.com/MikeeeGit/azure-firewall) owns AKS egress policy; the separate routing add-on never attaches AKS forced-tunnel tables to the gateway subnet.

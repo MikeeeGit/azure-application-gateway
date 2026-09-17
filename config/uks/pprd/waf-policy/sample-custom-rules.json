@@ -1,0 +1,46 @@
+[
+  {
+    "name": "ObserveSyntheticProbeHeader",
+    "priority": 10,
+    "rule_type": "MatchRule",
+    "action": "Log",
+    "match_conditions": [
+      {
+        "match_variables": [
+          {
+            "variable_name": "RequestHeaders",
+            "selector": "X-Example-Probe"
+          }
+        ],
+        "operator": "Equal",
+        "match_values": [
+          "synthetic"
+        ],
+        "negation_condition": false,
+        "transforms": []
+      }
+    ]
+  },
+  {
+    "name": "ObserveSyntheticPreproductionHeader",
+    "priority": 20,
+    "rule_type": "MatchRule",
+    "action": "Log",
+    "match_conditions": [
+      {
+        "match_variables": [
+          {
+            "variable_name": "RequestHeaders",
+            "selector": "X-Example-Environment"
+          }
+        ],
+        "operator": "Equal",
+        "match_values": [
+          "pprd"
+        ],
+        "negation_condition": false,
+        "transforms": []
+      }
+    ]
+  }
+]

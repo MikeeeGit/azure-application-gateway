@@ -271,3 +271,32 @@ run "https_backend_sni_and_draining" {
     error_message = "HTTPS listeners require SNI and backend HTTPS/draining configuration must be forwarded."
   }
 }
+
+run "request_body_size_enforcement_defaults_on" {
+  command = plan
+  assert {
+    condition     = one(azurerm_web_application_firewall_policy.policies["global"].policy_settings).request_body_enforcement && one(azurerm_web_application_firewall_policy.policies["global"].policy_settings).request_body_check
+    error_message = "Body inspection and maximum-size enforcement must both remain enabled by default."
+  }
+}
+run "explicit_body_size_exception_keeps_inspection" {
+  command = plan
+  variables {
+    waf_policies = { global = { request_body_enforcement = false, request_body_check = true } }
+  }
+  assert {
+    condition     = !one(azurerm_web_application_firewall_policy.policies["global"].policy_settings).request_body_enforcement && one(azurerm_web_application_firewall_policy.policies["global"].policy_settings).request_body_check
+    error_message = "The explicit size-enforcement switch must not silently disable request-body inspection."
+  }
+}
+run "environment_specific_json_policy_directory" {
+  command = plan
+  variables {
+    waf_config_root = "config/uks/pprd/waf-policy"
+    waf_policies    = { global = { files = { custom_rules = "sample-custom-rules.json", rule_group_overrides = "sample-rule-overrides.json", managed_rule_exclusions = "sample-exclusions.json" } } }
+  }
+  assert {
+    condition     = length(azurerm_web_application_firewall_policy.policies["global"].custom_rules) == 2 && alltrue([for rule in azurerm_web_application_firewall_policy.policies["global"].custom_rules : rule.action == "Log"]) && one([for rule in azurerm_web_application_firewall_policy.policies["global"].custom_rules : one(one(rule.match_conditions).match_variables).selector if rule.name == "ObserveSyntheticPreproductionHeader"]) == "X-Example-Environment"
+    error_message = "Selected environment JSON and its header selector must reach the resource without importing another environment's rules or Allow bypasses."
+  }
+}

@@ -1,5 +1,5 @@
 # Full scenario: network foundation and two independently managed AKS clusters already exist.
-# The ingress controllers and their internal LoadBalancer services MUST be deployed separately.
+# Deploy actual internal backend Services first; the platform demo creates them through shared Kustomize delivery.
 location             = "uksouth"
 location_abbreviated = "uks"
 environment          = "pprd"
@@ -18,7 +18,7 @@ backend_dns_link_virtual_network_ids = {
   hub = "/subscriptions/00000000-0000-0000-0000-000000000002/resourceGroups/uks-hub-vnet-rg-01/providers/Microsoft.Network/virtualNetworks/uks-hub-vnet-01"
 }
 backend_dns_records = {
-  # Change this one target to the separately verified aks02 ingress IP during cutover.
+  # Change this one target to the separately verified aks02 backend IP during cutover.
   service = { ip_addresses = ["10.81.0.20"], ttl = 30 }
 }
 backend_pools = {
@@ -58,3 +58,6 @@ rewrite_rule_sets = {
     response_headers = { X-Content-Type-Options = "nosniff" }
   }]
 }
+
+# Environment-specific reviewed JSON policy data; global examples keep config/all/waf-policy.
+waf_config_root = "config/uks/pprd/waf-policy"

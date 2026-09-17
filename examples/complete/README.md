@@ -2,7 +2,7 @@
 
 [complete.tfvars](complete.tfvars) is the standalone equivalent of [global](../../config/global.tfvars) plus [pprd](../../config/uks/pprd/pprd.tfvars). Keep them aligned.
 
-Network foundation owns hub/spoke VNets, aks01/aks02 and dedicated appgateway subnet, NSGs and routing. Separate AKS deployments/ingress controllers supply actual internal service IPs. This stack owns gateway/WAF and the apps.internal.example child zone.
+Network foundation owns hub/spoke VNets, aks01/aks02 and dedicated appgateway subnet, NSGs and routing. Application delivery on each AKS cluster supplies actual internal Service IPs. The integrated demo needs no ingress controller. This stack owns gateway/WAF and the apps.internal.example child zone.
 
 Synthetic networks: hub 10.80.0.0/16, pprd 10.81.0.0/16, ingress 10.81.0.20/10.81.4.20 and gateway 10.81.8.0/24. The stable service alias initially selects aks01; preview targets aks02 directly.
 

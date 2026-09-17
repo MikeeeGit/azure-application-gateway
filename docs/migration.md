@@ -1,6 +1,6 @@
 # Source provenance and migration
 
-Rebuilt from archived AZ-TF-appgateway-fd and AZ-TF-MOD-waf-policy. Originals were unchanged. No state, exported cloud snapshots, environment tfvars, certificate material, real identifiers or application policy exceptions were copied.
+Rebuilt from archived AZ-TF-appgateway-fd and AZ-TF-MOD-waf-policy, reconciled against the 17 September 2026 archive. Originals were unchanged. No state, exported cloud snapshots, environment tfvars, certificate material, real identifiers or application policy exceptions were copied.
 
 References below identify original archive entry locations:
 
@@ -41,3 +41,7 @@ References below identify original archive entry locations:
 Existing infrastructure needs a separately reviewed import/state-address migration and replacement analysis. Do not point this stack at production state merely because names look similar. Source conversion removed Front Door code; no live Front Door resources were deleted.
 
 The repository follows public framework v0.2: layered config, explicit AzureAD backends, provider checksums, Terraform1.16.3/AzureRM>=4.33,<5, credential-free tests and saved-plan review. Its state adapter consumes logical subnet keys with string-valued prefix outputs.
+
+## Updated source reconciliation
+
+The later source separates preproduction WAF JSON from the shared policy directory and adds request-body size enforcement to the WAF child. The public interface preserves directory selection explicitly through `waf_config_root`, with a synthetic PPRD example, and now exposes per-policy `request_body_enforcement` (default true). Match-variable selectors were already supported. Private policy exceptions, source-address annotations, partner allowlists and legacy gateway instances are deliberately not copied. The modern WAF_v2, listener/path routing, identity and dual-backend cutover remain the supported design.
