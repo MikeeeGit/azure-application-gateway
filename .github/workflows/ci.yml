@@ -47,3 +47,25 @@ jobs:
       var-files: |
         config/global.tfvars
         examples/complete/complete.tfvars
+  ingress-candidate:
+    name: Ingress candidate preview
+    uses: MikeeeGit/terraform-delivery-templates/.github/workflows/terraform-validate.yml@472c0c5bebe7f07aca8c51c7fabf0a47280a0b25
+    with:
+      template-ref: 472c0c5bebe7f07aca8c51c7fabf0a47280a0b25
+      directory: .
+      test-directory: tests/ingress-candidate
+      var-files: |
+        config/global.tfvars
+        config/uks/pprd/pprd.tfvars
+        examples/ingress-tls/candidate.tfvars
+  ingress-tls:
+    name: Ingress TLS cutover
+    uses: MikeeeGit/terraform-delivery-templates/.github/workflows/terraform-validate.yml@472c0c5bebe7f07aca8c51c7fabf0a47280a0b25
+    with:
+      template-ref: 472c0c5bebe7f07aca8c51c7fabf0a47280a0b25
+      directory: .
+      test-directory: tests/ingress-tls
+      var-files: |
+        config/global.tfvars
+        config/uks/pprd/pprd.tfvars
+        examples/ingress-tls/backend.tfvars

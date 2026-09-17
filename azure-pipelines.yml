@@ -41,3 +41,21 @@ jobs:
       varFiles: |
         config/global.tfvars
         examples/complete/complete.tfvars
+  - template: azure-pipelines/jobs/terraform-validate.yml@deliveryTemplates
+    parameters:
+      jobName: IngressCandidate
+      directory: .
+      testDirectory: tests/ingress-candidate
+      varFiles: |
+        config/global.tfvars
+        config/uks/pprd/pprd.tfvars
+        examples/ingress-tls/candidate.tfvars
+  - template: azure-pipelines/jobs/terraform-validate.yml@deliveryTemplates
+    parameters:
+      jobName: IngressTlsCutover
+      directory: .
+      testDirectory: tests/ingress-tls
+      varFiles: |
+        config/global.tfvars
+        config/uks/pprd/pprd.tfvars
+        examples/ingress-tls/backend.tfvars
