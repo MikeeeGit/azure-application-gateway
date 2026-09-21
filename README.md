@@ -46,6 +46,7 @@ PowerShell uses the same commands after dot-sourcing the corresponding terraform
 
 - WAF_v2 autoscale, explicit zones, public/private frontend selection.
 - Shared, unique Key Vault certificate definitions and one user-assigned identity.
+- Optional [private CA trust](examples/private-ca/README.md) for HTTPS backends, preserving chain and hostname verification.
 - Least-privilege managed RBAC, legacy Secret Get access policy, or externally owned access.
 - Independent pools, backend settings, explicit probe Hosts, affinity and optional connection draining.
 - Host/path routing, redirects, request/response headers and URL rewrites.

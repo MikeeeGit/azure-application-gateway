@@ -37,3 +37,6 @@ __pycache__/
 !examples/basic/basic.tfvars
 !examples/complete/complete.tfvars
 !examples/https-first/https.tfvars
+
+# Public certificate fixture only; its disposable private key was not retained.
+!tests/fixtures/public-test-root.pem

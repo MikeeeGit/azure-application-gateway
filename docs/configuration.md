@@ -37,7 +37,7 @@ rewrite_rule_sets supports request/response header maps and optional URL path/qu
 
 Choose exactly one source per pool: ip_addresses, fqdns or dns_record. The stack does not discover Kubernetes services; supply ingress IPs verified in your cluster/network.
 
-Backend port/protocol are independent of frontend HTTPS. Examples terminate TLS at the gateway and forward HTTP to private ingress. Set Https for re-encryption with a matching, trusted backend certificate. This edition uses provider/default public-CA trust; it does not configure private-CA roots.
+Backend port/protocol are independent of frontend HTTPS. Examples terminate TLS at the gateway and forward HTTP to private ingress. Set Https for re-encryption with a matching, trusted backend certificate. Default inputs retain provider public-CA trust. Optional trusted_root_certificates maps stable names to single public PEM certificates; backend_settings.<name>.trusted_root_certificate_names selects those roots for HTTPS settings. The module sends base64 DER certificate data to Azure and rejects private-key/PFX-shaped input, duplicate or missing references and HTTP root bindings. See the [private CA profile](../examples/private-ca/README.md). This adds trust anchors without disabling chain or hostname verification.
 
 Probe Host is its explicit host, otherwise backend host_name. A probe cannot silently inherit an unrelated public hostname. Configure a working health endpoint; this stack creates no ingress route or /healthz handler.
 
@@ -49,7 +49,7 @@ certificate_subscription selects the provider alias for permission resources and
 
 certificate_access_mode is rbac (Secrets User), access_policy (Secret Get), or existing (no permission changes). Existing access must be established before deployment. existing_identity supplies a user-assigned identity resource/principal/tenant ID; null creates one.
 
-When permissions are managed here, certificate secret URI hosts must match the one configured vault. Multi-vault access must be managed externally with existing mode. No certificate bytes, passwords or secret values are fetched into Terraform.
+When permissions are managed here, certificate secret URI hosts must match the one configured vault. Multi-vault access must be managed externally with existing mode. No frontend private certificate bytes, passwords or secret values are fetched into Terraform. Optional backend trust inputs contain public root certificates and are retained in plans/state.
 
 key_vault_private_dns_link optionally links the gateway VNet to an existing vault zone in the certificate subscription. Omit it when network foundation owns the link. A separate DNS-subscription zone should have its link managed by that DNS/network stack.
 

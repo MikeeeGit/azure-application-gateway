@@ -190,6 +190,19 @@ variable "certificates" {
     error_message = "Certificate URIs must be HTTPS versionless /secrets/<name> URIs, without a version or query."
   }
 }
+variable "trusted_root_certificates" {
+  description = "Optional named public CA roots as single PEM certificates for backend HTTPS trust. Never supply private keys, PFX data or credentials."
+  type        = map(string)
+  default     = {}
+  validation {
+    condition = alltrue([
+      for name, certificate in var.trusted_root_certificates :
+      can(regex("^[A-Za-z0-9][A-Za-z0-9_.-]{0,79}$", name)) &&
+      can(regex("^-----BEGIN CERTIFICATE-----\\r?\\n[A-Za-z0-9+/=\\r\\n]+\\r?\\n-----END CERTIFICATE-----$", trimspace(certificate)))
+    ])
+    error_message = "Each trusted root needs a unique Azure-compatible name and exactly one public PEM CERTIFICATE, without private keys or a certificate chain."
+  }
+}
 variable "backend_pools" {
   type = map(object({
     ip_addresses = optional(list(string), [])
@@ -215,11 +228,12 @@ variable "backend_pools" {
 }
 variable "backend_settings" {
   type = map(object({
-    port                  = number
-    protocol              = optional(string, "Http")
-    host_name             = optional(string)
-    cookie_based_affinity = optional(bool, false)
-    request_timeout       = optional(number, 300)
+    port                           = number
+    protocol                       = optional(string, "Http")
+    host_name                      = optional(string)
+    trusted_root_certificate_names = optional(list(string), [])
+    cookie_based_affinity          = optional(bool, false)
+    request_timeout                = optional(number, 300)
     connection_draining = optional(object({
       enabled = optional(bool, true)
       timeout = optional(number, 300)
@@ -233,7 +247,16 @@ variable "backend_settings" {
       status_codes        = optional(list(string), ["200-399"])
     }))
   }))
-  description = "Explicit backend protocol/port and optional probe. A probe requires its own host or backend host_name."
+  description = "Explicit backend protocol/port, optional named private CA roots and optional probe. A probe requires its own host or backend host_name."
+  validation {
+    condition = alltrue([
+      for settings in values(var.backend_settings) :
+      length(settings.trusted_root_certificate_names) == length(distinct(settings.trusted_root_certificate_names)) &&
+      (length(settings.trusted_root_certificate_names) == 0 || settings.protocol == "Https") &&
+      alltrue([for name in settings.trusted_root_certificate_names : contains(keys(var.trusted_root_certificates), name)])
+    ])
+    error_message = "Backend trusted roots must be unique declared trusted_root_certificates names and may be used only with Https."
+  }
   validation {
     condition = length(var.backend_settings) > 0 && alltrue([
       for settings in values(var.backend_settings) :

@@ -300,3 +300,79 @@ run "environment_specific_json_policy_directory" {
     error_message = "Selected environment JSON and its header selector must reach the resource without importing another environment's rules or Allow bypasses."
   }
 }
+
+run "default_backend_trust_unchanged" {
+  command = plan
+  assert {
+    condition     = length(azurerm_application_gateway.appgw.trusted_root_certificate) == 0 && alltrue([for item in azurerm_application_gateway.appgw.backend_http_settings : length(item.trusted_root_certificate_names) == 0])
+    error_message = "Default inputs must not add private roots or change existing backend trust."
+  }
+}
+run "explicit_private_ca_is_bound_to_https_backends" {
+  command = plan
+  variables {
+    trusted_root_certificates = { lab = file("tests/fixtures/public-test-root.pem") }
+    backend_settings = {
+      web = { port = 443, protocol = "Https", host_name = "web.example.test", trusted_root_certificate_names = ["lab"], probe = { path = "/healthz" } }
+      api = { port = 443, protocol = "Https", host_name = "api.example.test", trusted_root_certificate_names = ["lab"], probe = { path = "/api/healthz" } }
+    }
+  }
+  assert {
+    condition     = length(azurerm_application_gateway.appgw.trusted_root_certificate) == 1 && one(azurerm_application_gateway.appgw.trusted_root_certificate).name == "lab"
+    error_message = "The reviewed public root must appear exactly once."
+  }
+  assert {
+    condition     = one(azurerm_application_gateway.appgw.trusted_root_certificate).data == replace(replace(replace(trimspace(file("tests/fixtures/public-test-root.pem")), "-----BEGIN CERTIFICATE-----", ""), "-----END CERTIFICATE-----", ""), "/\\s+/", "")
+    error_message = "Backend trust must contain the base64 DER public certificate without PEM envelope."
+  }
+  assert {
+    condition     = alltrue([for item in azurerm_application_gateway.appgw.backend_http_settings : item.protocol == "Https" && item.port == 443 && toset(item.trusted_root_certificate_names) == toset(["lab"])])
+    error_message = "Each selected HTTPS backend must bind the declared root."
+  }
+}
+run "reject_private_key_as_trusted_root" {
+  command = plan
+  variables {
+    trusted_root_certificates = { invalid = "-----BEGIN PRIVATE KEY-----\nYQ==\n-----END PRIVATE KEY-----" }
+  }
+  expect_failures = [var.trusted_root_certificates]
+}
+run "reject_certificate_chain_as_single_root" {
+  command = plan
+  variables {
+    trusted_root_certificates = { invalid = "${file("tests/fixtures/public-test-root.pem")}${file("tests/fixtures/public-test-root.pem")}" }
+  }
+  expect_failures = [var.trusted_root_certificates]
+}
+run "reject_undeclared_backend_root" {
+  command = plan
+  variables {
+    backend_settings = {
+      web = { port = 443, protocol = "Https", host_name = "web.example.test", trusted_root_certificate_names = ["missing"] }
+      api = { port = 8080, host_name = "api.example.test" }
+    }
+  }
+  expect_failures = [var.backend_settings]
+}
+run "reject_http_backend_root" {
+  command = plan
+  variables {
+    trusted_root_certificates = { lab = file("tests/fixtures/public-test-root.pem") }
+    backend_settings = {
+      web = { port = 80, protocol = "Http", host_name = "web.example.test", trusted_root_certificate_names = ["lab"] }
+      api = { port = 8080, host_name = "api.example.test" }
+    }
+  }
+  expect_failures = [var.backend_settings]
+}
+run "reject_duplicate_backend_roots" {
+  command = plan
+  variables {
+    trusted_root_certificates = { lab = file("tests/fixtures/public-test-root.pem") }
+    backend_settings = {
+      web = { port = 443, protocol = "Https", host_name = "web.example.test", trusted_root_certificate_names = ["lab", "lab"] }
+      api = { port = 8080, host_name = "api.example.test" }
+    }
+  }
+  expect_failures = [var.backend_settings]
+}

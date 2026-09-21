@@ -136,16 +136,27 @@ resource "azurerm_application_gateway" "appgw" {
       ] : backend_address_pool.value.fqdns
     }
   }
+  dynamic "trusted_root_certificate" {
+    for_each = var.trusted_root_certificates
+    content {
+      name = trusted_root_certificate.key
+      # Azure accepts DER certificate bytes encoded as base64. Strip only the
+      # public PEM envelope and whitespace; no private key enters this resource.
+      data = replace(replace(replace(trimspace(trusted_root_certificate.value),
+      "-----BEGIN CERTIFICATE-----", ""), "-----END CERTIFICATE-----", ""), "/\\s+/", "")
+    }
+  }
   dynamic "backend_http_settings" {
     for_each = var.backend_settings
     content {
-      name                  = backend_http_settings.key
-      port                  = backend_http_settings.value.port
-      protocol              = backend_http_settings.value.protocol
-      host_name             = backend_http_settings.value.host_name
-      cookie_based_affinity = backend_http_settings.value.cookie_based_affinity ? "Enabled" : "Disabled"
-      request_timeout       = backend_http_settings.value.request_timeout
-      probe_name            = backend_http_settings.value.probe == null ? null : backend_http_settings.key
+      name                           = backend_http_settings.key
+      port                           = backend_http_settings.value.port
+      protocol                       = backend_http_settings.value.protocol
+      host_name                      = backend_http_settings.value.host_name
+      trusted_root_certificate_names = backend_http_settings.value.trusted_root_certificate_names
+      cookie_based_affinity          = backend_http_settings.value.cookie_based_affinity ? "Enabled" : "Disabled"
+      request_timeout                = backend_http_settings.value.request_timeout
+      probe_name                     = backend_http_settings.value.probe == null ? null : backend_http_settings.key
       dynamic "connection_draining" {
         for_each = backend_http_settings.value.connection_draining == null ? [] : [backend_http_settings.value.connection_draining]
         content {

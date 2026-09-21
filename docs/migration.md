@@ -11,7 +11,7 @@ This component provides WAF_v2, named listeners, explicit backend settings, URL 
 - Affinity defaults off rather than forced on. Connection draining is explicit and optional.
 - Zones are explicit instead of environment-derived; gateway/public IP use the same list. Lifecycle replacement is not hidden.
 - Original application allowlists, exclusions, disabled rules and blanket country defaults are not published. Synthetic rules log a sample header.
-- Certificate roles are least privilege. Original private-CA trusted roots were empty; this edition does not claim that feature.
+- Certificate roles are least privilege. Original private-CA trusted roots were empty. The additive [private CA profile](../examples/private-ca/README.md) now exposes named public trust anchors for HTTPS backends; its empty default preserves prior behavior.
 - JSON files are first-class inputs; missing/malformed/empty files fail. Valid empty collections remain explicit.
 - Focused outputs replace the original sensitive whole-gateway object.
 
