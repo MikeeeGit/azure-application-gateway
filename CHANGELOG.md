@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Validate autoscale minimum 0–100 and maximum 2–125 before planning, matching AzureRM while preserving the default 2/10 capacities.
+
 - Added an explicit controller-independent ingress TLS profile and focused offline integration checks.
 
 - Bind the basic example certificate provider explicitly to its workload vault subscription so shared-global layering stays valid.

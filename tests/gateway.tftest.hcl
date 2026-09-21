@@ -63,6 +63,10 @@ variables {
 run "tls_waf_dedup_probes_and_redirects" {
   command = plan
   assert {
+    condition     = one(azurerm_application_gateway.appgw.autoscale_configuration).min_capacity == 2 && one(azurerm_application_gateway.appgw.autoscale_configuration).max_capacity == 10
+    error_message = "Default autoscale capacity must remain minimum two and maximum ten."
+  }
+  assert {
     condition     = one(azurerm_application_gateway.appgw.sku).name == "WAF_v2" && length(azurerm_application_gateway.appgw.ssl_certificate) == 1
     error_message = "Shared TLS certificates must have a single block and WAF_v2 must stay enabled."
   }
@@ -375,4 +379,93 @@ run "reject_duplicate_backend_roots" {
     }
   }
   expect_failures = [var.backend_settings]
+}
+
+run "small_disposable_autoscale" {
+  command = plan
+  variables {
+    autoscale = { min_capacity = 1, max_capacity = 2 }
+  }
+  assert {
+    condition     = one(azurerm_application_gateway.appgw.autoscale_configuration).min_capacity == 1 && one(azurerm_application_gateway.appgw.autoscale_configuration).max_capacity == 2
+    error_message = "Valid autoscale boundaries must reach the gateway resource unchanged."
+  }
+}
+
+run "zero_minimum_autoscale_boundary" {
+  command = plan
+  variables {
+    autoscale = { min_capacity = 0, max_capacity = 2 }
+  }
+  assert {
+    condition     = one(azurerm_application_gateway.appgw.autoscale_configuration).min_capacity == 0 && one(azurerm_application_gateway.appgw.autoscale_configuration).max_capacity == 2
+    error_message = "Valid autoscale boundaries must reach the gateway resource unchanged."
+  }
+}
+
+run "upper_autoscale_boundaries" {
+  command = plan
+  variables {
+    autoscale = { min_capacity = 100, max_capacity = 125 }
+  }
+  assert {
+    condition     = one(azurerm_application_gateway.appgw.autoscale_configuration).min_capacity == 100 && one(azurerm_application_gateway.appgw.autoscale_configuration).max_capacity == 125
+    error_message = "Valid autoscale boundaries must reach the gateway resource unchanged."
+  }
+}
+
+run "reject_autoscale_maximum_one" {
+  command = plan
+  variables {
+    autoscale = { min_capacity = 1, max_capacity = 1 }
+  }
+  expect_failures = [var.autoscale]
+}
+
+run "reject_negative_autoscale_minimum" {
+  command = plan
+  variables {
+    autoscale = { min_capacity = -1, max_capacity = 2 }
+  }
+  expect_failures = [var.autoscale]
+}
+
+run "reject_autoscale_minimum_above_provider_limit" {
+  command = plan
+  variables {
+    autoscale = { min_capacity = 101, max_capacity = 125 }
+  }
+  expect_failures = [var.autoscale]
+}
+
+run "reject_autoscale_minimum_above_maximum" {
+  command = plan
+  variables {
+    autoscale = { min_capacity = 3, max_capacity = 2 }
+  }
+  expect_failures = [var.autoscale]
+}
+
+run "reject_autoscale_maximum_above_provider_limit" {
+  command = plan
+  variables {
+    autoscale = { min_capacity = 2, max_capacity = 126 }
+  }
+  expect_failures = [var.autoscale]
+}
+
+run "reject_fractional_autoscale_minimum" {
+  command = plan
+  variables {
+    autoscale = { min_capacity = 0.5, max_capacity = 2 }
+  }
+  expect_failures = [var.autoscale]
+}
+
+run "reject_fractional_autoscale_maximum" {
+  command = plan
+  variables {
+    autoscale = { min_capacity = 1, max_capacity = 2.5 }
+  }
+  expect_failures = [var.autoscale]
 }

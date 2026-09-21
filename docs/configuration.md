@@ -23,6 +23,21 @@ Alternatively, network_state accepts explicit Azure backend subscription, resour
 
 The private frontend defaults to subnet host 7; private_frontend.ip_address overrides it. Azure-reserved and out-of-subnet addresses are rejected.
 
+## Autoscaling
+
+`autoscale` defaults to `{ min_capacity = 2, max_capacity = 10 }`. Both values must be integers: minimum 0–100, maximum 2–125, and minimum must not exceed maximum. These ranges match the [AzureRM 4.81 provider contract](https://github.com/hashicorp/terraform-provider-azurerm/blob/v4.81.0/website/docs/r/application_gateway.html.markdown#argument-reference). Invalid capacities fail at input validation before resource planning.
+
+For a deliberately small disposable trial, use:
+
+```hcl
+autoscale = {
+  min_capacity = 1
+  max_capacity = 2
+}
+```
+
+A minimum of one does not permit a maximum of one; the provider requires a maximum of at least two. This profile can scale to two instances, retains WAF_v2 and does not change the production defaults. Choose capacity and availability zones for the intended workload.
+
 ## Listeners and paths
 
 Both frontends are enabled by default, but each listener selects public or private explicitly. A private frontend alone does not create a private listener. Private-only deployment prerequisites are in [deployment](deployment.md).

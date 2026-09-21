@@ -130,8 +130,14 @@ variable "autoscale" {
   })
   default = {}
   validation {
-    condition     = var.autoscale.min_capacity >= 0 && var.autoscale.max_capacity >= 1 && var.autoscale.max_capacity <= 125 && var.autoscale.min_capacity <= var.autoscale.max_capacity && floor(var.autoscale.min_capacity) == var.autoscale.min_capacity && floor(var.autoscale.max_capacity) == var.autoscale.max_capacity
-    error_message = "Use integer autoscale capacities with 0 <= min <= max <= 125 and max >= 1."
+    condition = (
+      var.autoscale.min_capacity >= 0 && var.autoscale.min_capacity <= 100 &&
+      var.autoscale.max_capacity >= 2 && var.autoscale.max_capacity <= 125 &&
+      var.autoscale.min_capacity <= var.autoscale.max_capacity &&
+      floor(var.autoscale.min_capacity) == var.autoscale.min_capacity &&
+      floor(var.autoscale.max_capacity) == var.autoscale.max_capacity
+    )
+    error_message = "Use integer autoscale capacities with min between 0 and 100, max between 2 and 125, and min <= max."
   }
 }
 variable "ssl_policy_name" {
